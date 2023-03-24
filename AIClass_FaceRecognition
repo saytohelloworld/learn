@@ -1,0 +1,75 @@
+import face_recognition as frec
+import cv2
+
+
+def showImg(name, imgUrl):
+    """
+    使用 OpenCV 库显示图片到窗口
+    :param name: 窗口标题，仅支持英文
+    :param imgUrl: 图片路径
+    :return: 无
+    """
+
+    cv2.namedWindow(name, 0)
+    cv2.imshow(name, imgUrl)
+
+    if cv2.waitKey(0) == ord('s'):
+        cv2.destroyAllWindows()
+        imgName = input("将图片保存为：")
+
+        if len(imgName.split('.')) == 2:
+            cv2.imwrite(imgName, imgUrl)
+        else:
+            cv2.imwrite(imgName+'.png', imgUrl)
+
+        print("保存成功")
+    else:
+        cv2.destroyAllWindows()
+
+
+def faceRec(imgUrl):
+    """
+    使用 face_recognition 库识别人脸位置
+    :param imgUrl: 图片路径
+    :return: 人脸位置数组
+    """
+
+    img = frec.load_image_file(imgUrl)
+    face_locations = frec.face_locations(img)
+
+    return face_locations
+
+
+def signFace(imgUrl, faceArr):
+    """
+    使用 OpenCV 库在原图中标记出人脸位置
+    :param imgUrl: 原图路径
+    :param faceArr: 人脸位置数组
+    :return: 标记人脸后的原图
+    """
+
+    img = cv2.imread(imgUrl)
+
+    for i in range(0, len(faceArr)):
+        top = faceArr[i][0]
+        right = faceArr[i][1]
+        bottom = faceArr[i][2]
+        left = faceArr[i][3]
+
+        start = (left, top)
+        end = (right, bottom)
+
+        color = (55, 255, 155)
+        thickness = 20
+        cv2.rectangle(img, start, end, color, thickness)
+
+    return img
+
+
+if __name__ == "__main__":
+    # imgUrl 变量是原图，未经修改的图片路径
+    imgUrl = 'a.jpg'
+
+    faceArr = faceRec(imgUrl)
+    endImg = signFace(imgUrl, faceArr)
+    showImg("Face Rec OK", endImg)
